@@ -5,10 +5,10 @@ import Ticket from "../components/Ticket";
 
 function page() {
   return (
-    <div>
+    <div className="bg-[#F5F6FA] h-auto pb-20">
       <NavbarProfile />
       <Rute />
-      <Ticket />
+      {/* <Ticket /> */}
     </div>
   );
 }

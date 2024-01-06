@@ -9,7 +9,7 @@ function NavbarProfile() {
   const activeStyle = "border-b-[3px] border-[#2395FF]";
   const nonActiveStyle = " text-white";
   return (
-    <nav className="flex justify-between items-center px-20 py-9">
+    <nav className="flex justify-between items-center px-20 py-9 bg-white">
       <div className="logo flex gap-6 justify-between items-center">
         <Image src="/icon.png" alt="icon company" width={50} height={30}></Image>
         <h1 className="text-[#414141] font-[600] text-[24px]">Ankasa</h1>
