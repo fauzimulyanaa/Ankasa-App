@@ -1,15 +1,13 @@
 import React from "react";
 import NavbarProfile from "../components/NavbarProfile";
-import Rute from "../components/Rute";
+import BookingPass from "../components/BookingPass";
 import Footer from "../components/Footer";
 
 function page() {
   return (
-    <div className="h-auto  bg-[#F5F6FA]">
-      <div className="relative">
-        <NavbarProfile />
-        <Rute />
-      </div>
+    <div>
+      <NavbarProfile />
+      <BookingPass />
       <Footer />
     </div>
   );
