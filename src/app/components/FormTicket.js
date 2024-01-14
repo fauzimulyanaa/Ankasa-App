@@ -1,8 +1,161 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
+import { useCookies } from "react-cookie";
 
 function FormTicket() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [cookies, setCookie] = useCookies(["access_token"]);
+
+  const flightId = searchParams.get("code");
+  const token = cookies.access_token;
+
+  const [toggleSameContact, setToggleSameContact] = useState(false);
+  const [fullname, setFullname] = useState();
+  const [email, setEmail] = useState();
+  const [codePhone, setCodePhone] = useState();
+  const [phoneNumber, setPhoneNumber] = useState();
+  const [title, setTitle] = useState();
+  const [nationality, setNationality] = useState();
+  const [fullnameSameAsContact, setFullnameSameAsContact] = useState();
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      Swal.fire({
+        title: "Fetching Flight Details",
+        html: "Please wait...",
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      try {
+        if (flightId) {
+          const response = await axios.get(`https://easy-lime-seal-toga.cyclic.app/airlines/flight/${flightId}`);
+          const data = response.data.data;
+          console.log(data);
+          setSelectedFlight(data);
+        }
+        Swal.close();
+      } catch (error) {
+        console.error("Error fetching flight details:", error);
+      }
+    };
+
+    fetchData();
+  }, [flightId]);
+
+  const getFormattedTime = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
+    return `${hours}:${minutes < 10 ? "0" : ""}${minutes}`;
+  };
+  const formatDate = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    const day = dateTime.getDate();
+    const month = dateTime.getMonth();
+    const year = dateTime.getFullYear();
+    return `${day}/${month < 10 ? "0" : ""}${month + 1}/${year}`;
+  };
+
+  const handleProceedPayment = async (e) => {
+    e.preventDefault();
+    setIsLoading(!isLoading);
+    if (!fullname || !fullnameSameAsContact) {
+      return Swal.fire({
+        title: "Failed!",
+        text: "Fullname required",
+        icon: "error",
+      });
+    }
+    if (!email) {
+      return Swal.fire({
+        title: "Failed!",
+        text: "Email required",
+        icon: "error",
+      });
+    }
+    if (!phoneNumber || !codePhone) {
+      return Swal.fire({
+        title: "Failed!",
+        text: "Phone Number required",
+        icon: "error",
+      });
+    }
+    if (!title) {
+      return Swal.fire({
+        title: "Failed!",
+        text: "Title required",
+        icon: "error",
+      });
+    }
+    if (!nationality) {
+      return Swal.fire({
+        title: "Failed!",
+        text: "Nationality required",
+        icon: "error",
+      });
+    }
+    const formInput = {
+      title,
+      fullname: `${toggleSameContact ? fullname : fullnameSameAsContact}`,
+      nationality,
+    };
+    console.log(formInput);
+
+    if (isLoading) {
+      Swal.fire({
+        title: "Booking ticket...",
+        html: "Please wait...",
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+    }
+    try {
+      const res = await axios.post("https://easy-lime-seal-toga.cyclic.app/booking/tickets/" + flightId, formInput, {
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(res.data.data.message);
+
+      const ticketCode = res.data.data.code;
+      console.log(`Ticket Code: ${ticketCode}`);
+      Swal.fire({
+        title: "Success!",
+        text: "Booking ticket successful, waiting for payment!",
+        icon: "success",
+      });
+
+      router.push(`/ticket-payment?code=${ticketCode}`);
+    } catch (error) {
+      console.log(error);
+      Swal.fire({
+        title: "Failed!",
+        text: error.response.data.data.message,
+        icon: "error",
+      });
+    } finally {
+      setIsLoading(!isLoading);
+    }
+  };
+
   return (
     <div>
       <div className="w-full bg-[#2395FF] h-[200px] relative rounded-b-[30px] z-10">
@@ -25,23 +178,24 @@ function FormTicket() {
               <div className="px-10 py-10   w-full">
                 <div className="fullname pb-9 flex flex-col ">
                   <label className="text-[14px] text-[#9B96AB] pb-2">Full Name</label>
-                  <input type="text" name="" id="" className="outline-none  border-b-2 pb-3 placeholder-black placeholder-[16px]" placeholder="Mike Kowalski" />
+                  <input type="text" name="" id="" className="outline-none  border-b-2 pb-3 placeholder-black placeholder-[16px]" placeholder="Mike Kowalski" onChange={(e) => setFullname(e.target.value)} />
                 </div>
                 <div className="email pb-9 flex flex-col">
                   <label className="text-[14px] text-[#9B96AB] pb-2">Email</label>
-                  <input type="email" name="" id="" className="outline-none border-b-2 pb-3 placeholder-black placeholder-[16px]" placeholder="flightbooking@ankasa.com" />
+                  <input type="email" name="" id="" className="outline-none border-b-2 pb-3 placeholder-black placeholder-[16px]" placeholder="flightbooking@ankasa.com" onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="password flex  border-b-2 pb-3">
                   <div className="country-code ">
-                    <select>
-                      <option value="1">+62 (ID)</option>
+                    <select onChange={(e) => setCodePhone(e.target.value)}>
+                      <option value="">Select</option>
+                      <option value="+62">+62 (ID)</option>
                       <option value="1">+1 (USA)</option>
-                      <option value="44">+44 (UK)</option>
+                      <option value="+44">+44 (UK)</option>
                     </select>
                   </div>
                   <div className="border-r-[1px] border-slate-300 pr-3"></div>
                   <div className="email flex flex-col w-full pl-3">
-                    <input type="email" name="" id="" className="outline-none placeholder-black placeholder-[16px]" placeholder="81987654321" />
+                    <input type="email" name="" id="" className="outline-none placeholder-black placeholder-[16px]" placeholder="81987654321" onChange={(e) => setPhoneNumber(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -66,10 +220,10 @@ function FormTicket() {
                   <h1 className="text-[#595959] font-[600] text-[14px]">Passenger : 1 Adult</h1>
                   <div className="togl flex items-center gap-3">
                     <h1 className="text-[#595959] font-[600] text-[14px]">Same as contact person</h1>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="47" height="25" viewBox="0 0 47 25" fill="none">
-                      <rect width="47" height="25" rx="12.5" fill="#C4C4C4" />
-                      <circle cx="13.5" cy="12.5" r="10.5" fill="white" />
-                    </svg>
+                    <label htmlFor="toggle" className={`${toggleSameContact ? "bg-[#2395ff]" : "bg-[#C4C4C4]"} w-[55px] h-[30px] rounded-full cursor-pointer relative peer-checked:bg-yellow-300`}>
+                      <input type="checkbox" id="toggle" className="sr-only peer" onChange={() => setToggleSameContact(!toggleSameContact)} />
+                      <span className="bg-white w-[24px] h-[24px] rounded-full absolute left-[3px] top-[3px] peer-checked:left-[28px] transition-all duration-500"></span>
+                    </label>
                   </div>
                 </div>
                 <div className="password border-b-2 pb-3">
@@ -77,27 +231,36 @@ function FormTicket() {
                     <label className="text-[14px] text-[#9B96AB] pb-2">Title</label>
                   </div>
                   <div className="w-full">
-                    <select>
-                      <option value="1">Mr.</option>
-                      <option value="1">Mrs.</option>
+                    <select onChange={(e) => setTitle(e.target.value)}>
+                      <option value="">Select Title</option>
+                      <option value="mr">Mr.</option>
+                      <option value="mrs">Mrs.</option>
                     </select>
-                    <input type="email" name="" id="" className="outline-none placeholder-black placeholder-[16px]" />
                   </div>
                 </div>
                 <div className="fullname pb-9 flex flex-col mt-6">
                   <label className="text-[14px] text-[#9B96AB] pb-2">Full Name</label>
-                  <input type="text" name="" id="" className="outline-none  border-b-2 pb-3 placeholder-black placeholder-[16px]" placeholder="Mike Kowalski" />
+                  <input
+                    type="text"
+                    name=""
+                    id=""
+                    className="outline-none  border-b-2 pb-3 placeholder-black placeholder-[16px]"
+                    placeholder="Mike Kowalski"
+                    onChange={(e) => setFullnameSameAsContact(e.target.value)}
+                    value={toggleSameContact ? fullname : fullnameSameAsContact}
+                    disabled={toggleSameContact ? true : false}
+                  />
                 </div>
                 <div className="password border-b-2 pb-3">
                   <div className="country-code mb-3">
                     <label className="text-[14px] text-[#9B96AB] pb-2">Nationallity</label>
                   </div>
                   <div className="w-full">
-                    <select>
+                    <select onChange={(e) => setNationality(e.target.value)}>
+                      <option value="">Select</option>
                       <option value="1">Indonesia</option>
-                      <option value="1">America</option>
+                      <option value="2">America</option>
                     </select>
-                    <input type="email" name="" id="" className="outline-none placeholder-black placeholder-[16px]" />
                   </div>
                 </div>
               </div>
@@ -125,28 +288,60 @@ function FormTicket() {
               </div>
             </div>
             <div className="px-20 py-10 text-center ">
-              <Link href="/ticket-payment" className="w-[319px] bg-[#2395FF] px-16 py-4 text-white rounded-lg shadow-sm shadow-[#2395FF]">
+              <button onClick={(e) => handleProceedPayment(e)} className="w-[319px] bg-[#2395FF] px-16 py-4 text-white rounded-lg shadow-sm shadow-[#2395FF] hover:bg-blue-700 transition duration-300">
                 Proceed to Payment
-              </Link>
+              </button>
             </div>
           </div>
           <div className="right w-[412px] h-[375px] bg-white rounded-md shadow-lg mt-10">
             <div className="wrapper">
               <div className="logo flex px-8 py-7 gap-10 items-center">
-                <Image src="/garuda.png" width={100} height={57}></Image>
-                <h1>Garuda Indonesia</h1>
+                <img src={selectedFlight?.photo} alt="icon" width={100} height={57}></img>
+                <h1 className="text-[18px] font-[500] text-[#595959]">{selectedFlight?.name}</h1>
               </div>
               <div className="tujuan flex items-center gap-7 px-8 py-5">
-                <h1 className="text-[18px] font-[500]">Medan (IDN)</h1>
+                <h1 className="text-[19px] font-[500]">
+                  {selectedFlight?.from?.country === "Indonesia"
+                    ? "IDN"
+                    : selectedFlight?.from?.country === "France"
+                    ? "FRA"
+                    : selectedFlight?.from?.country === "United States"
+                    ? "USA"
+                    : selectedFlight?.from?.country === "United Kingdom"
+                    ? "UK"
+                    : selectedFlight?.from?.country === "Australia"
+                    ? "AUS"
+                    : selectedFlight?.from?.country}
+                </h1>
                 <Image src="/to.svg" alt="icon plane" width={19.032} height={18}></Image>
-                <h1 className="text-[18px] font-[500]">Tokyo (JPN)</h1>
+                <h1 className="text-[18px] font-[500]">
+                  {selectedFlight?.to?.country === "Indonesia"
+                    ? "IDN"
+                    : selectedFlight?.to?.country === "France"
+                    ? "FRA"
+                    : selectedFlight?.to?.country === "United States"
+                    ? "USA"
+                    : selectedFlight?.to?.country === "United Kingdom"
+                    ? "UK"
+                    : selectedFlight?.to?.country === "Australia"
+                    ? "AUS"
+                    : selectedFlight?.to?.country === "Japan"
+                    ? "JPN"
+                    : selectedFlight?.to?.country === "Singapore"
+                    ? "SGP"
+                    : selectedFlight?.to?.country === "Malaysia"
+                    ? "MYS"
+                    : selectedFlight?.to?.country}
+                </h1>
               </div>
               <div className="date px-8 flex items-center gap-6">
-                <p className="text-[12px] text-[#6B6B6B]">Sunday, 15 August 2020</p>
+                <p className="text-[12px] text-[#6B6B6B]">{formatDate(selectedFlight?.takeoff)}</p>
                 <svg xmlns="http://www.w3.org/2000/svg" width="5" height="5" viewBox="0 0 5 5" fill="none">
                   <circle cx="2.5" cy="2.5" r="2.5" fill="#6B6B6B" />
                 </svg>
-                <p className="text-[12px] text-[#6B6B6B]">12:33 - 15:21</p>
+                <p className="text-[12px] text-[#6B6B6B]">
+                  {getFormattedTime(selectedFlight?.takeoff)} - {getFormattedTime(selectedFlight?.landing)}{" "}
+                </p>
               </div>
               <div className="benefit px-8 py-5">
                 <div className="one flex items-center gap-5 pb-4">
@@ -174,7 +369,7 @@ function FormTicket() {
               <div className="total px-8 flex py-5 justify-between items-center">
                 <h1 className="text-[18px] font-[500]">Total Payment</h1>
                 <div className="price flex items-center gap-3 justify-between">
-                  <h1 className="text-[24px] font-[600] text-[#2395FF]">$ 145,00</h1>
+                  <h1 className="text-[24px] font-[600] text-[#2395FF]">$ {selectedFlight?.price}, 00</h1>
                   <Image src="/btnback.svg" alt="arrow" width={12} height={12} />
                 </div>
               </div>

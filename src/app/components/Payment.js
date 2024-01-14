@@ -1,9 +1,56 @@
+"use client";
+
 import Image from "next/image";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
+import { useCookies } from "react-cookie";
+import axios from "axios";
 
 function Payment() {
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvc: "",
+  });
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const code = searchParams.get("code");
+  const [cookies, setCookie] = useCookies(["access_token"]);
+  const token = cookies.access_token;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPaymentDetails({ ...paymentDetails, [name]: value });
+  };
+  const handlePaymentClick = async () => {
+    const data = {
+      statusId: 2,
+    };
+
+    try {
+      const response = await axios.put(`https://easy-lime-seal-toga.cyclic.app/booking/status/${code}`, data);
+
+      Swal.fire({
+        title: "Success!",
+        text: "Payment ticket successful!",
+        icon: "success",
+      });
+
+      router.push("/profile");
+    } catch (error) {
+      console.error("Error during payment:", error);
+      Swal.fire({
+        title: "Failed!",
+        text: error.response.data.data.message,
+        icon: "error",
+      });
+    }
+  };
+
   return (
-    <div className="bg-[#2395FF] w-full h-[650px] flex items-center justify-center">
+    <div className="bg-[#2395FF] w-full h-[750px] flex items-center justify-center">
       <div className="wrappper bg-white w-[80%] h-[70%] flex px-20 gap-6">
         <div className="method py-10 w-[60%]">
           <div className="title">
@@ -47,9 +94,9 @@ function Payment() {
                 <Image src="/lock.png" alt="icon lock" width={15} height={15}></Image>
                 <p className="text-slate-400">Your transaction is secured with ssl certificate</p>
               </div>
-              {/* <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600">
-                Proses Pembayaran
-              </button> */}
+              <button type="button" onClick={handlePaymentClick} className="w-full bg-blue-500 text-white p-2 rounded mt-3 hover:bg-blue-600">
+                Payment
+              </button>
             </form>
           </div>
         </div>

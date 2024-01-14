@@ -3,11 +3,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/navigation";
 
 function NavbarProfile() {
   const currentRoute = usePathname();
   const activeStyle = "border-b-[3px] border-[#2395FF]";
   const nonActiveStyle = "text-black";
+  const [, , removeCookie] = useCookies(["access_token"]);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Hapus cookie token saat logout
+    removeCookie("access_token", { path: "/" });
+
+    // Redirect ke halaman login atau halaman lainnya
+    router.push("/auth/login");
+  };
+
   return (
     <nav className="flex justify-between items-center px-20 py-9 bg-white">
       <div className="logo flex gap-6 justify-between items-center">
@@ -36,8 +49,13 @@ function NavbarProfile() {
         <Image src="/email.svg" alt="icon company" width={20} height={20} className=""></Image>
         <Image src="/notif.svg" alt="icon company" width={20} height={20} className=""></Image>
         <div className="profile-pic ">
-          <Image src="/profile.png" alt="icon company" width={27} height={27} className="rounded-full border-2 border-[#2395FF]"></Image>
+          <Link href="/profile">
+            <Image src="/profile.png" alt="icon company" width={27} height={27} className="rounded-full border-2 border-[#2395FF]"></Image>
+          </Link>
         </div>
+        <button className="text-[#414141] text-[16px] font-[700]" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
     </nav>
   );
