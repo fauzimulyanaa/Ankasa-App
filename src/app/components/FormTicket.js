@@ -10,6 +10,8 @@ import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { useCookies } from "react-cookie";
 
+const url = process.env.NEXT_PUBLIC_API_LINK;
+
 function FormTicket() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,7 +44,7 @@ function FormTicket() {
       });
       try {
         if (flightId) {
-          const response = await axios.get(`https://easy-lime-seal-toga.cyclic.app/airlines/flight/${flightId}`);
+          const response = await axios.get(url + `/airlines/flight/${flightId}`);
           const data = response.data.data;
           console.log(data);
           setSelectedFlight(data);
@@ -127,7 +129,7 @@ function FormTicket() {
       });
     }
     try {
-      const res = await axios.post("https://easy-lime-seal-toga.cyclic.app/booking/tickets/" + flightId, formInput, {
+      const res = await axios.post(url + `/booking/tickets/` + flightId, formInput, {
         headers: {
           "content-type": "application/x-www-form-urlencoded",
           Authorization: `Bearer ${token}`,

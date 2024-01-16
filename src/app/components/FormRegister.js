@@ -9,6 +9,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
+const url = process.env.NEXT_PUBLIC_API_LINK;
+
 function FormRegister() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,7 +34,7 @@ function FormRegister() {
           Swal.showLoading();
         },
       });
-      const response = await axios.post("https://easy-lime-seal-toga.cyclic.app/auth/register", { name, email, password });
+      const response = await axios.post(url + `/auth/register`, { name, email, password });
       const { access_token } = response.data.data;
 
       setCookie("token", access_token, { path: "/" });

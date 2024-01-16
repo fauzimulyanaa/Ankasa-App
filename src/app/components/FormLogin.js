@@ -9,6 +9,8 @@ import { useCookies } from "react-cookie";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
+const url = process.env.NEXT_PUBLIC_API_LINK;
+
 function FormLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +25,7 @@ function FormLogin() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("https://easy-lime-seal-toga.cyclic.app/auth/login", { email, password });
+      const response = await axios.post(url + `/auth/login`, { email, password });
       const { access_token } = response.data.data;
 
       // Simpan token dalam cookie

@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const url = "https://easy-lime-seal-toga.cyclic.app";
+const url = process.env.NEXT_PUBLIC_API_LINK;
 function BookingPass() {
   const searchParams = useSearchParams();
   const [tickets, setTickets] = useState();

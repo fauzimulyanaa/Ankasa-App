@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { useCookies } from "react-cookie";
 import axios from "axios";
+const url = process.env.NEXT_PUBLIC_API_LINK;
 
 function Payment() {
   const [paymentDetails, setPaymentDetails] = useState({
@@ -30,7 +31,7 @@ function Payment() {
     };
 
     try {
-      const response = await axios.put(`https://easy-lime-seal-toga.cyclic.app/booking/status/${code}`, data);
+      const response = await axios.put(url + `/booking/status/${code}`, data);
 
       Swal.fire({
         title: "Success!",

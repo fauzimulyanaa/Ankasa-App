@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const base_url = "https://easy-lime-seal-toga.cyclic.app";
+const base_url = process.env.NEXT_PUBLIC_API_LINK;
 
 function FormForgotPassword() {
   const [email, setEmail] = useState("");

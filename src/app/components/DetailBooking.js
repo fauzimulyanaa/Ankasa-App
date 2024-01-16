@@ -8,6 +8,8 @@ import { useCookies } from "react-cookie";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
+const url = process.env.NEXT_PUBLIC_API_LINK;
+
 function DetailBooking() {
   const router = useRouter();
   const [tickets, setTickets] = useState([]);
@@ -16,7 +18,7 @@ function DetailBooking() {
   const token = cookies.access_token;
   const [selectedFlight, setSelectedFlight] = useState(null);
 
-  const apiUrl = "https://easy-lime-seal-toga.cyclic.app/booking/tickets/";
+  const apiUrl = url + `/booking/tickets/`;
   useEffect(() => {
     getAllFlight();
   }, []);

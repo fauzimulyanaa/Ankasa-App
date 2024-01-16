@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import RangeSlider from "./RangePrice";
-const url = "https://easy-lime-seal-toga.cyclic.app";
+const url = process.env.NEXT_PUBLIC_API_LINK;
 
 function Rute({ searchParams }) {
   //   const router = useRouter();
